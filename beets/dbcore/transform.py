@@ -82,3 +82,43 @@ class CollectionFieldTransform(FieldTransform):
             value = t.apply_to_value(value)
 
         return value
+
+
+class ConditionalTransform(FieldTransform):
+    """Compare items ignoring case."""
+
+    def apply_to_sql(self, expr: str) -> str:
+        if not self.enable:
+            return expr
+
+        return self._apply_to_sql(expr)
+
+    def _apply_to_sql(self, expr: str) -> str:
+        raise NotImplementedError
+
+    def apply_to_value(self, value: str) -> str:
+        if not self.enable:
+            return value
+
+        return self._apply_to_value(value)
+
+    def _apply_to_value(self, value: str) -> str:
+        raise NotImplementedError
+
+
+@builtin_transform
+class SmartCase(ConditionalTransform):
+    """Compare items ignoring case."""
+
+    name = "smart-case"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.enable = self.pattern.islower()
+
+    def _apply_to_sql(self, expr: str) -> str:
+        return f"lower({expr})"
+
+    def _apply_to_value(self, value: str) -> str:
+        return value.lower()

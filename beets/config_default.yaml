@@ -160,7 +160,7 @@ sort_item: artist+ album+ disc+ track+
 sort_case_insensitive: yes
 
 query:
-    transforms: []
+    transforms: [smart-case, smart-diacritics]
 
 # --------------- Autotagger ---------------
 

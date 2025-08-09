@@ -267,6 +267,33 @@ sorting lexicographic fields. When set to ``no``, lower-case values will be
 placed after upper-case values (e.g., *Bar Qux foo*), while ``yes`` would
 result in the more expected *Bar foo Qux*. Default: ``yes``.
 
+
+.. _search_query_options:
+
+Query Options
+-------------
+
+These options are available in the `query` section are:
+
+.. _transforms:
+
+transforms
+~~~~~~~~~~
+A list of transformations to apply to queries.
+
+Builtin transforms are:
+
+* ``smart-case``: 
+  If your query is all lower-case, matching is case-insensitive.
+  If your query contains upper-case characters, matching is case-sensitive.
+
+For example::
+
+    query:
+        transforms: [smart-case]
+
+Default: ``[smart-case]``.
+
 .. _original_date:
 
 original_date

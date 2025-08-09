@@ -24,9 +24,6 @@ from beets.plugins import BeetsPlugin
 class FuzzyQuery(StringFieldQuery[str]):
     @classmethod
     def string_match(cls, pattern: str, val: str):
-        # smartcase
-        if pattern.islower():
-            val = val.lower()
         query_matcher = difflib.SequenceMatcher(None, pattern, val)
         threshold = config["fuzzy"]["threshold"].as_number()
         return query_matcher.quick_ratio() >= threshold

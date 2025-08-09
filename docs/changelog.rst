@@ -8,6 +8,9 @@ Unreleased
 
 New features:
 
+* Queries use smart-case and are no longer case-insensitive in most cases.
+  Meaning if your query is all lower-case, matching is case-insensitive.
+  If your query contains upper-case characters, matching is case-sensitive.
 * :doc:`plugins/musicbrainz`: The MusicBrainz autotagger has been moved to
   a separate plugin. The default :ref:`plugins-config` includes `musicbrainz`,
   but if you've customized your `plugins` list in your configuration, you'll

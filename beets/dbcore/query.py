@@ -289,11 +289,11 @@ class StringQuery(StringFieldQuery[str]):
     """A query that matches a whole string in a specific Model field."""
 
     def col_clause(self) -> tuple[str, Sequence[SQLiteType]]:
-        return f"lower({self.col_expr()}) = ?", [self.pattern.lower()]
+        return f"{self.col_expr()} = ?", [self.pattern.lower()]
 
     @classmethod
     def string_match(cls, pattern: str, value: str) -> bool:
-        return pattern.lower() == value.lower()
+        return pattern == value
 
 
 class SubstringQuery(StringFieldQuery[str]):
@@ -301,13 +301,13 @@ class SubstringQuery(StringFieldQuery[str]):
 
     def col_clause(self) -> tuple[str, Sequence[SQLiteType]]:
         return (
-            f"glob(?, lower({self.col_expr()}))",
-            [f"*{glob.escape(self.pattern.lower())}*"],
+            f"glob(?, {self.col_expr()})",
+            [f"*{glob.escape(self.pattern)}*"],
         )
 
     @classmethod
     def string_match(cls, pattern: str, value: str) -> bool:
-        return pattern.lower() in value.lower()
+        return pattern in value
 
 
 class PathQuery(FieldQuery[bytes]):
