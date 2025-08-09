@@ -16,6 +16,7 @@
 
 from __future__ import annotations
 
+import glob
 import os
 import re
 import unicodedata
@@ -288,14 +289,7 @@ class StringQuery(StringFieldQuery[str]):
     """A query that matches a whole string in a specific Model field."""
 
     def col_clause(self) -> tuple[str, Sequence[SQLiteType]]:
-        search = (
-            self.pattern.replace("\\", "\\\\")
-            .replace("%", "\\%")
-            .replace("_", "\\_")
-        )
-        clause = f"{self.col_expr()} like ? escape '\\'"
-        subvals = [search]
-        return clause, subvals
+        return f"lower({self.col_expr()}) = ?", [self.pattern.lower()]
 
     @classmethod
     def string_match(cls, pattern: str, value: str) -> bool:
@@ -306,15 +300,10 @@ class SubstringQuery(StringFieldQuery[str]):
     """A query that matches a substring in a specific Model field."""
 
     def col_clause(self) -> tuple[str, Sequence[SQLiteType]]:
-        pattern = (
-            self.pattern.replace("\\", "\\\\")
-            .replace("%", "\\%")
-            .replace("_", "\\_")
+        return (
+            f"glob(?, lower({self.col_expr()}))",
+            [f"*{glob.escape(self.pattern.lower())}*"],
         )
-        search = "%" + pattern + "%"
-        clause = f"{self.col_expr()} like ? escape '\\'"
-        subvals = [search]
-        return clause, subvals
 
     @classmethod
     def string_match(cls, pattern: str, value: str) -> bool:

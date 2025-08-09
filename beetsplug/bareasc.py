@@ -18,6 +18,8 @@
 
 """Provides a bare-ASCII matching query."""
 
+import glob
+
 from unidecode import unidecode
 
 from beets import ui
@@ -42,8 +44,9 @@ class BareascQuery(StringFieldQuery[str]):
 
     def col_clause(self):
         """Compare ascii version of the pattern."""
-        clause = f"unidecode({self.field})"
-        return rf"{clause} LIKE ? ESCAPE '\'", [f"%{unidecode(self.pattern)}%"]
+        return f"lower(unidecode({self.field}))", [
+            f"*{glob.escape(unidecode(self.pattern.lower()))}*"
+        ]
 
 
 class BareascPlugin(BeetsPlugin):
