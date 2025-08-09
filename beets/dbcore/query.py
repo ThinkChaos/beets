@@ -78,6 +78,38 @@ class InvalidQueryArgumentValueError(ParsingError):
         super().__init__(message)
 
 
+def query_intersection(subqueries: Sequence[Query]) -> Query:
+    """Return a Query that is the intersection of all subqueries.
+
+    This is essentially equivalent to `AndQuery`, but without wrapping
+    when there is no need to.
+    """
+
+    if not subqueries:
+        return TrueQuery()
+
+    if len(subqueries) == 1:
+        return subqueries[0]
+
+    return AndQuery(subqueries)
+
+
+def query_union(subqueries: Sequence[Query]) -> Query:
+    """Return a Query that is the union of all subqueries.
+
+    This is essentially equivalent to `OrQuery`, but without wrapping
+    when there is no need to.
+    """
+
+    if not subqueries:
+        return FalseQuery()
+
+    if len(subqueries) == 1:
+        return subqueries[0]
+
+    return OrQuery(subqueries)
+
+
 class Query(ABC):
     """An abstract class representing a query into the database."""
 

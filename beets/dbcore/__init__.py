@@ -24,6 +24,8 @@ from .query import (
     MatchQuery,
     OrQuery,
     Query,
+    query_intersection,
+    query_union,
 )
 from .queryparse import (
     parse_sorted_query,
@@ -45,5 +47,7 @@ __all__ = [
     "Type",
     "parse_sorted_query",
     "query_from_strings",
+    "query_intersection",
+    "query_union",
     "sort_from_strings",
 ]

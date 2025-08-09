@@ -55,6 +55,7 @@ class ModelFixture1(LibModel):
         "field_two": dbcore.types.STRING,
     }
 
+    _search_fields = ("field_one",)
     _sorts = {
         "some_sort": SortFixture,
     }
@@ -602,28 +603,26 @@ class QueryFromStringsTest(unittest.TestCase):
 
     def test_zero_parts(self):
         q = self.qfs([])
-        assert isinstance(q, dbcore.query.AndQuery)
-        assert len(q.subqueries) == 1
-        assert isinstance(q.subqueries[0], dbcore.query.TrueQuery)
+        assert isinstance(q, dbcore.query.TrueQuery)
 
     def test_two_parts(self):
         q = self.qfs(["foo", "bar:baz"])
         assert isinstance(q, dbcore.query.AndQuery)
         assert len(q.subqueries) == 2
-        assert isinstance(q.subqueries[0], dbcore.query.OrQuery)
+        assert isinstance(q.subqueries[0], dbcore.query.SubstringQuery)
         assert isinstance(q.subqueries[1], dbcore.query.SubstringQuery)
 
     def test_parse_fixed_type_query(self):
         q = self.qfs(["field_one:2..3"])
-        assert isinstance(q.subqueries[0], dbcore.query.NumericQuery)
+        assert isinstance(q, dbcore.query.NumericQuery)
 
     def test_parse_flex_type_query(self):
         q = self.qfs(["some_float_field:2..3"])
-        assert isinstance(q.subqueries[0], dbcore.query.NumericQuery)
+        assert isinstance(q, dbcore.query.NumericQuery)
 
     def test_empty_query_part(self):
         q = self.qfs([""])
-        assert isinstance(q.subqueries[0], dbcore.query.TrueQuery)
+        assert isinstance(q, dbcore.query.TrueQuery)
 
 
 class SortFromStringsTest(unittest.TestCase):
@@ -689,9 +688,8 @@ class ParseSortedQueryTest(unittest.TestCase):
 
     def test_no_spaces_or_query(self):
         q, s = self.psq("foo,bar")
-        assert isinstance(q, dbcore.query.AndQuery)
+        assert isinstance(q, dbcore.query.SubstringQuery)
         assert isinstance(s, dbcore.query.NullSort)
-        assert len(q.subqueries) == 1
 
     def test_trailing_comma_or_query(self):
         q, s = self.psq("foo , bar ,")
@@ -707,9 +705,8 @@ class ParseSortedQueryTest(unittest.TestCase):
 
     def test_only_direction(self):
         q, s = self.psq("-")
-        assert isinstance(q, dbcore.query.AndQuery)
+        assert isinstance(q, dbcore.query.NotQuery)
         assert isinstance(s, dbcore.query.NullSort)
-        assert len(q.subqueries) == 1
 
 
 class ResultsIteratorTest(unittest.TestCase):

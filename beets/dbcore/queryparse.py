@@ -39,7 +39,6 @@ PARSE_QUERY_PART_REGEX = re.compile(
     r"(?<!\\):"  # Unescaped :
     r")?"
     r"(.*)",  # The term itself.
-    re.I,  # Case-insensitive.
 )
 
 
@@ -181,6 +180,13 @@ def query_from_strings(
         subqueries.append(construct_query_part(model_cls, prefixes, part))
     if not subqueries:  # No terms in query.
         subqueries = [query.TrueQuery()]
+
+    if query_cls is query.AndQuery:
+        return query.query_intersection(subqueries)
+
+    if query_cls is query.OrQuery:
+        return query.query_union(subqueries)
+
     return query_cls(subqueries)
 
 
@@ -257,7 +263,6 @@ def parse_sorted_query(
             if last_subquery_part:
                 subquery_parts.append(last_subquery_part)
             # Parse the subquery in to a single AndQuery
-            # TODO: Avoid needlessly wrapping AndQueries containing 1 subquery?
             query_parts.append(
                 query_from_strings(
                     query.AndQuery, model_cls, prefixes, subquery_parts
@@ -272,7 +277,6 @@ def parse_sorted_query(
             else:
                 subquery_parts.append(part)
 
-    # Avoid needlessly wrapping single statements in an OR
-    q = query.OrQuery(query_parts) if len(query_parts) > 1 else query_parts[0]
+    q = query.query_union(query_parts)
     s = sort_from_strings(model_cls, sort_parts, case_insensitive)
     return q, s

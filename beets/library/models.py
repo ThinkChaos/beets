@@ -109,21 +109,21 @@ class LibModel(dbcore.Model["Library"]):
         return query_cls(field, pattern, fast)
 
     @classmethod
-    def any_field_query(cls, *args, **kwargs) -> dbcore.OrQuery:
-        return dbcore.OrQuery(
+    def any_field_query(cls, *args, **kwargs) -> dbcore.Query:
+        return dbcore.query_union(
             [cls.field_query(f, *args, **kwargs) for f in cls._search_fields]
         )
 
     @classmethod
-    def any_writable_media_field_query(cls, *args, **kwargs) -> dbcore.OrQuery:
+    def any_writable_media_field_query(cls, *args, **kwargs) -> dbcore.Query:
         fields = cls.writable_media_fields
-        return dbcore.OrQuery(
+        return dbcore.query_union(
             [cls.field_query(f, *args, **kwargs) for f in fields]
         )
 
-    def duplicates_query(self, fields: list[str]) -> dbcore.AndQuery:
+    def duplicates_query(self, fields: list[str]) -> dbcore.Query:
         """Return a query for entities with same values in the given fields."""
-        return dbcore.AndQuery(
+        return dbcore.query_intersection(
             [
                 self.field_query(f, self.get(f), dbcore.MatchQuery)
                 for f in fields
