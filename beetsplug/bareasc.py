@@ -36,19 +36,13 @@ class BareascQuery(StringFieldQuery[str]):
         If pattern is all lower case, also convert string to lower case so
         match is also case insensitive
         """
-        # smartcase
-        if pattern.islower():
-            val = val.lower()
-        pattern = unidecode(pattern)
-        val = unidecode(val)
+        pattern = unidecode(pattern.lower())
+        val = unidecode(val.lower())
         return pattern in val
 
     def col_clause(self):
         """Compare ascii version of the pattern."""
         clause = f"unidecode({self.field})"
-        if self.pattern.islower():
-            clause = f"lower({clause})"
-
         return rf"{clause} LIKE ? ESCAPE '\'", [f"%{unidecode(self.pattern)}%"]
 
 
