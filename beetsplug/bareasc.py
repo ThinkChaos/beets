@@ -19,6 +19,7 @@
 """Provides a bare-ASCII matching query."""
 
 import glob
+import logging
 
 from unidecode import unidecode
 
@@ -55,6 +56,14 @@ class BareascPlugin(BeetsPlugin):
     def __init__(self):
         """Default prefix for selecting bare-ASCII matching is #."""
         super().__init__()
+
+        log = logging.getLogger("beets")
+        log.warn(
+            "beet queries now default to smart-diacritics (bare-ASCII matching)"
+            " and the bareasc plugin is deprecated. "
+            "Please remove it from your config."
+        )
+
         self.config.add(
             {
                 "prefix": "#",

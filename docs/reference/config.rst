@@ -287,12 +287,17 @@ Builtin transforms are:
   If your query is all lower-case, matching is case-insensitive.
   If your query contains upper-case characters, matching is case-sensitive.
 
+* ``smart-diacritics``: 
+  If your query contains only ASCII characters, matching is diacritic-insensitive
+  (accents, strokes, etc. are folded to their base ASCII character).
+  If your query contains non-ASCII characters, matching is diacritic sensitive.
+
 For example::
 
     query:
-        transforms: [smart-case]
+        transforms: [smart-case, smart-diacritics]
 
-Default: ``[smart-case]``.
+Default: ``[smart-case, smart-diacritics]``.
 
 .. _original_date:
 

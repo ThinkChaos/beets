@@ -73,7 +73,6 @@ following to your configuration:
    aura
    autobpm
    badfiles
-   bareasc
    beatport
    bpd
    bpm
@@ -338,9 +337,6 @@ Interoperability
 
 Miscellaneous
 -------------
-
-:doc:`bareasc <bareasc>`
-   Search albums and tracks with bare ASCII string matching.
 
 :doc:`bpd <bpd>`
    A music player for your beets library that emulates `MPD`_ and is

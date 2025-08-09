@@ -1,6 +1,8 @@
 from abc import ABC
 from collections.abc import Sequence
 
+from unidecode import unidecode
+
 FieldTransformType = type["FieldTransform"]
 
 builtin_transforms: dict[str, FieldTransformType] = {}
@@ -122,3 +124,24 @@ class SmartCase(ConditionalTransform):
 
     def _apply_to_value(self, value: str) -> str:
         return value.lower()
+
+
+@builtin_transform
+class SmartDiacritics(ConditionalTransform):
+    """Compare items ignoring diacritics (accents, strokes, etc.).
+
+    Smart bare ASCII.
+    """
+
+    name = "smart-diacritics"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.enable = self.pattern.isascii()
+
+    def _apply_to_sql(self, expr: str) -> str:
+        return f"unidecode({expr})"
+
+    def _apply_to_value(self, value: str) -> str:
+        return unidecode(value)
