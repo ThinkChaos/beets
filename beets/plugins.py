@@ -42,6 +42,7 @@ if TYPE_CHECKING:
 
     from beets.dbcore import Query
     from beets.dbcore.db import FieldQueryType
+    from beets.dbcore.transform import FieldTransformType
     from beets.dbcore.types import Type
     from beets.importer import ImportSession, ImportTask
     from beets.library import Album, Item, Library
@@ -202,6 +203,10 @@ class BeetsPlugin(metaclass=abc.ABCMeta):
         """Return a dict mapping prefixes to Query subclasses."""
         return {}
 
+    def field_transforms(self) -> dict[str, FieldTransformType]:
+        """Return a dict mapping names to FieldTransform subclasses."""
+        return {}
+
     def add_media_field(
         self, name: str, descriptor: mediafile.MediaField
     ) -> None:
@@ -347,12 +352,24 @@ def commands() -> list[Subcommand]:
 
 
 def queries() -> dict[str, type[Query]]:
-    """Returns a dict mapping prefix strings to Query subclasses all loaded
+    """Returns a dict mapping prefix strings to Query subclasses of all loaded
     plugins.
     """
     out: dict[str, type[Query]] = {}
     for plugin in find_plugins():
         out.update(plugin.queries())
+    return out
+
+
+def field_transforms() -> dict[str, FieldTransformType]:
+    """Returns a dict mapping names to FieldTransform subclasses of all loaded
+    plugins.
+    """
+    out: dict[str, FieldTransformType] = {}
+
+    for plugin in find_plugins():
+        out.update(plugin.field_transforms())
+
     return out
 
 

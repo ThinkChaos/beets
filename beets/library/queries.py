@@ -4,6 +4,7 @@ import shlex
 
 import beets
 from beets import dbcore, logging, plugins
+from beets.dbcore import transform
 
 log = logging.getLogger("beets")
 
@@ -38,8 +39,20 @@ def parse_query_parts(parts, model_cls):
 
     case_insensitive = beets.config["sort_case_insensitive"].get(bool)
 
+    all_transforms = dict(**transform.builtin_transforms)
+    all_transforms.update(plugins.field_transforms())
+
+    transforms = [
+        all_transforms[name]
+        for name in beets.config["query"]["transforms"].get(list)
+    ]
+
     query, sort = dbcore.parse_sorted_query(
-        model_cls, parts, prefixes, case_insensitive
+        model_cls,
+        parts,
+        prefixes,
+        case_insensitive,
+        transforms,
     )
     log.debug("Parsed query: {!r}", query)
     log.debug("Parsed sort: {!r}", sort)

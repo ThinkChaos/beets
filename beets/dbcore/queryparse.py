@@ -20,13 +20,14 @@ import itertools
 import re
 from typing import TYPE_CHECKING
 
-from . import query
+from . import query, transform
 
 if TYPE_CHECKING:
     from collections.abc import Collection, Sequence
 
     from ..library import LibModel
     from .query import FieldQueryType, Sort
+    from .transform import FieldTransformType
 
     Prefixes = dict[str, FieldQueryType]
 
@@ -116,6 +117,7 @@ def construct_query_part(
     model_cls: type[LibModel],
     prefixes: Prefixes,
     query_part: str,
+    transforms: Sequence[FieldTransformType],
 ) -> query.Query:
     """Parse a *query part* string and return a :class:`Query` object.
 
@@ -148,14 +150,20 @@ def construct_query_part(
         query_part, query_classes, prefixes
     )
 
+    field_transform = transform.union(transforms, pattern)
+
     if key is None:
         # If there's no key (field name) specified, this is a "match anything"
         # query.
-        out_query = model_cls.any_field_query(pattern, query_class)
+        out_query = model_cls.any_field_query(
+            pattern, query_class, field_transform
+        )
     else:
         # Field queries get constructed according to the name of the field
         # they are querying.
-        out_query = model_cls.field_query(key.lower(), pattern, query_class)
+        out_query = model_cls.field_query(
+            key.lower(), pattern, query_class, field_transform
+        )
 
     # Apply negation.
     if negate:
@@ -170,14 +178,17 @@ def query_from_strings(
     model_cls: type[LibModel],
     prefixes: Prefixes,
     query_parts: Collection[str],
+    transforms: Sequence[FieldTransformType] = [],
 ) -> query.Query:
     """Creates a collection query of type `query_cls` from a list of
     strings in the format used by parse_query_part. `model_cls`
     determines how queries are constructed from strings.
     """
-    subqueries = []
-    for part in query_parts:
-        subqueries.append(construct_query_part(model_cls, prefixes, part))
+    subqueries = [
+        construct_query_part(model_cls, prefixes, part, transforms)
+        for part in query_parts
+    ]
+
     if not subqueries:  # No terms in query.
         subqueries = [query.TrueQuery()]
 
@@ -245,6 +256,7 @@ def parse_sorted_query(
     parts: list[str],
     prefixes: Prefixes = {},
     case_insensitive: bool = True,
+    transforms: Sequence[FieldTransformType] = [],
 ) -> tuple[query.Query, Sort]:
     """Given a list of strings, create the `Query` and `Sort` that they
     represent.
@@ -265,7 +277,11 @@ def parse_sorted_query(
             # Parse the subquery in to a single AndQuery
             query_parts.append(
                 query_from_strings(
-                    query.AndQuery, model_cls, prefixes, subquery_parts
+                    query.AndQuery,
+                    model_cls,
+                    prefixes,
+                    subquery_parts,
+                    transforms,
                 )
             )
             del subquery_parts[:]

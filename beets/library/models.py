@@ -29,6 +29,7 @@ from .queries import PF_KEY_DEFAULT, parse_query_string
 
 if TYPE_CHECKING:
     from ..dbcore.query import FieldQuery, FieldQueryType
+    from ..dbcore.transform import FieldTransform
     from .library import Library  # noqa: F401
 
 log = logging.getLogger("beets")
@@ -96,7 +97,11 @@ class LibModel(dbcore.Model["Library"]):
 
     @classmethod
     def field_query(
-        cls, field: str, pattern: str, query_cls: FieldQueryType
+        cls,
+        field: str,
+        pattern: str,
+        query_cls: FieldQueryType,
+        transform: FieldTransform,
     ) -> FieldQuery:
         """Get a `FieldQuery` for the given field on this model."""
         fast = field in cls.all_db_fields
@@ -106,7 +111,7 @@ class LibModel(dbcore.Model["Library"]):
             # Using an explicit table name resolves this.
             field = f"{cls._table}.{field}"
 
-        return query_cls(field, pattern, fast)
+        return query_cls(field, pattern, fast, transform)
 
     @classmethod
     def any_field_query(cls, *args, **kwargs) -> dbcore.Query:
